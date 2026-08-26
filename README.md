@@ -3,7 +3,8 @@
 แดชบอร์ดสถิตแบบไฟล์เดียว (static site) สรุปผลประกอบการปี 2026 ของ Nola Superfoods
 สร้างจากไฟล์ Excel ต้นทาง `Nola Superfood Sale 2026 14.xlsx`
 
-**หน้าเว็บ:** เปิดจาก GitHub Pages ของ repo นี้ (ตั้งค่าที่ Settings → Pages → Source: GitHub Actions)
+**หน้าเว็บ:** https://ecomnolasuperfoods.github.io/Ecom-Sale-Dashbosrd/
+(ตั้งค่าไว้ที่ Settings → Pages → Source: Deploy from a branch → `main` / `(root)` — push ขึ้น main แล้ว deploy เองอัตโนมัติ)
 
 ## แดชบอร์ดมีอะไรบ้าง
 
@@ -51,7 +52,7 @@ python3 -m http.server 8000
 python3 scripts/build_standalone.py
 ```
 
-5. commit และ push — GitHub Actions จะ deploy ขึ้น Pages ให้อัตโนมัติ
+5. commit และ push ขึ้น branch `main` — GitHub Pages จะอัปเดตให้เองภายใน 1–2 นาที
 
 ## ข้อควรรู้เกี่ยวกับข้อมูล
 
