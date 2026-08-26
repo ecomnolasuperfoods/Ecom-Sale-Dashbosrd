@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nola Superfoods — Data Dashboard 2026</title>
+<meta name="description" content="แดชบอร์ดยอดขาย แพลตฟอร์ม ค่าโฆษณา สินค้า สต็อก และ Affiliate ของ Nola Superfoods ปี 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-row">
+      <div class="brand">NOLÁ <span>Data Dashboard</span></div>
+      <div class="subtitle" id="coverage">กำลังโหลดข้อมูล…</div>
+      <div class="spacer"></div>
+      <button class="icon-btn" id="themeBtn" type="button" title="สลับโหมดสว่าง/มืด">โหมดสี</button>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="หมวดข้อมูล">
+      <button class="tab" role="tab" data-tab="overview"  aria-selected="true">ภาพรวม</button>
+      <button class="tab" role="tab" data-tab="sales"     aria-selected="false">ยอดขาย</button>
+      <button class="tab" role="tab" data-tab="platform"  aria-selected="false">แพลตฟอร์ม &amp; Ads</button>
+      <button class="tab" role="tab" data-tab="products"  aria-selected="false">สินค้า &amp; สต็อก</button>
+      <button class="tab" role="tab" data-tab="affiliate" aria-selected="false">Affiliate</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div id="loading" class="card" style="text-align:center;color:var(--text-muted)">กำลังโหลด data.json …</div>
+
+  <!-- ===== ภาพรวม ===== -->
+  <div class="panel" id="panel-overview" hidden>
+    <div class="kpis" id="kpiRow"></div>
+
+    <section class="card">
+      <div class="card-head"><h2>GMV รายเดือน 2026 เทียบเป้าและปีก่อน</h2></div>
+      <p class="note">แท่ง = ยอดขายจริงรายเดือน · เส้น = เป้าหมายรายเดือน · เส้นประ = ยอดจริงปี 2025 เดือนเดียวกัน</p>
+      <div class="chart-wrap h360"><canvas id="cOverviewMonthly"></canvas></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card">
+        <div class="card-head"><h2>สัดส่วนยอดขายรายแพลตฟอร์ม (2026 สะสม)</h2></div>
+        <p class="note">รวมทุกเดือนที่มีข้อมูลในปี 2026</p>
+        <div class="chart-wrap h320"><canvas id="cPlatShare"></canvas></div>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>แนวโน้มยอดขายรายปี</h2></div>
+        <p class="note">ปี 2026 เป็นยอดสะสมถึงเดือนล่าสุด จึงยังเทียบเต็มปีไม่ได้</p>
+        <div class="chart-wrap h320"><canvas id="cYearly"></canvas></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="card-head"><h2>สรุปรายเดือน 2026</h2></div>
+      <p class="note">ยอดขายรวม / เทียบเป้า / MoM / ค่าโฆษณา / ROI (ยอดขายหารค่าโฆษณา)</p>
+      <div class="table-scroll"><table id="tOverview"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>ประเด็นที่ต้องตาม</h2></div>
+      <div class="callouts" id="insights"></div>
+    </section>
+  </div>
+
+  <!-- ===== ยอดขาย ===== -->
+  <div class="panel" id="panel-sales" hidden>
+    <section class="card">
+      <div class="card-head"><h2>ยอดขายรายวัน — 2026 เทียบ 2025</h2></div>
+      <p class="note">เลือกแพลตฟอร์มและเดือนเพื่อดูรูปแบบรายวัน (เส้นทึบ = 2026, เส้นจาง = 2025)</p>
+      <div class="controls">
+        <label for="selPlatD">แพลตฟอร์ม</label>
+        <select id="selPlatD"></select>
+        <label for="selMonD">เดือน</label>
+        <select id="selMonD"></select>
+      </div>
+      <div class="chart-wrap h360"><canvas id="cDaily"></canvas></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card">
+        <div class="card-head"><h2>คำสั่งซื้อ และ AOV รายเดือน</h2></div>
+        <p class="note">คำสั่งซื้อรวมทุกแพลตฟอร์ม (แท่ง) และยอดเฉลี่ยต่อออเดอร์ (แสดงในตารางด้านล่าง)</p>
+        <div class="chart-wrap h280"><canvas id="cOrders"></canvas></div>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>ยอดขายที่ถูกยกเลิก</h2></div>
+        <p class="note">มูลค่าออเดอร์ที่ถูกยกเลิกรายเดือน คิดเป็น % ของยอดขาย</p>
+        <div class="chart-wrap h280"><canvas id="cCancel"></canvas></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="card-head"><h2>ยอดขายรายเดือนแยกแพลตฟอร์ม — 2026 เทียบ 2025</h2></div>
+      <div class="controls">
+        <div class="seg" id="segYearView">
+          <button type="button" data-v="2026" aria-pressed="true">2026</button>
+          <button type="button" data-v="2025" aria-pressed="false">2025</button>
+          <button type="button" data-v="diff" aria-pressed="false">ผลต่าง %</button>
+        </div>
+      </div>
+      <div class="table-scroll"><table id="tMonthPlat"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>วันแคมเปญ Double Day</h2></div>
+      <p class="note">เฉพาะวันแคมเปญที่มีข้อมูลบันทึกไว้ในไฟล์ต้นทาง</p>
+      <div class="table-scroll"><table id="tDday"></table></div>
+    </section>
+  </div>
+
+  <!-- ===== แพลตฟอร์ม & Ads ===== -->
+  <div class="panel" id="panel-platform" hidden>
+    <section class="card">
+      <div class="card-head"><h2>ยอดขายรายเดือนแยกแพลตฟอร์ม (2026)</h2></div>
+      <p class="note">แท่งซ้อน — ความสูงรวมคือ GMV ของเดือนนั้น</p>
+      <div class="chart-wrap h360"><canvas id="cStack"></canvas></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card">
+        <div class="card-head"><h2>ค่าโฆษณารายเดือน</h2></div>
+        <p class="note">ค่าโฆษณารวมทุกแพลตฟอร์ม (บาท)</p>
+        <div class="chart-wrap h280"><canvas id="cAdsSpend"></canvas></div>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>ROI และสัดส่วนค่าโฆษณาต่อยอดขาย</h2></div>
+        <p class="note">ROI = ยอดขาย ÷ ค่าโฆษณา (เท่า) · ADS% แสดงในตารางด้านล่าง</p>
+        <div class="chart-wrap h280"><canvas id="cRoi"></canvas></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="card-head"><h2>โฆษณาแยกรายแพลตฟอร์ม</h2></div>
+      <div class="controls">
+        <div class="seg" id="segAdsPlat">
+          <button type="button" data-v="Tiktok" aria-pressed="true">TikTok</button>
+          <button type="button" data-v="Shopee" aria-pressed="false">Shopee</button>
+          <button type="button" data-v="Lazada" aria-pressed="false">Lazada</button>
+        </div>
+      </div>
+      <p class="note">แท่ง = GMV ที่โฆษณาแต่ละแบบมีส่วนช่วย (attributed) · เส้นประ = GMV รวมของแพลตฟอร์ม — ยอด attributed ซ้อนทับกันได้ จึงอาจสูงกว่าเส้นประ</p>
+      <div class="chart-wrap h320"><canvas id="cAdsPlat"></canvas></div>
+      <div class="table-scroll" style="margin-top:14px"><table id="tAdsPlat"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Shopee — ยอดขายแยกตามแหล่งที่มา</h2></div>
+      <p class="note">หน้ารายละเอียดสินค้า / Live ของร้าน / วิดีโอของร้าน / พาร์ทเนอร์ · แต่ละช่องทางเป็นยอดที่ Shopee ระบุแหล่งที่มา (attribution) จึงซ้อนทับกันได้ ไม่ใช่การแบ่งสัดส่วนที่บวกกันได้พอดี</p>
+      <div class="chart-wrap h320"><canvas id="cShopeeCh"></canvas></div>
+    </section>
+  </div>
+
+  <!-- ===== สินค้า & สต็อก ===== -->
+  <div class="panel" id="panel-products" hidden>
+    <div class="kpis" id="kpiProducts"></div>
+
+    <div class="grid2">
+      <section class="card">
+        <div class="card-head"><h2>สินค้าขายดี — จำนวนชิ้น (Jan–Jul 2026)</h2></div>
+        <p class="note">15 อันดับแรกตามจำนวนชิ้นที่ขายได้สะสม</p>
+        <div class="chart-wrap h420"><canvas id="cTopSku"></canvas></div>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>สัดส่วนตามหมวดสินค้า</h2></div>
+        <p class="note">จำนวนชิ้นสะสม Jan–Jul 2026 แยกตามหมวด</p>
+        <div class="chart-wrap h420"><canvas id="cCategory"></canvas></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="card-head"><h2>แนวโน้มจำนวนชิ้นรายเดือนของสินค้าหลัก</h2></div>
+      <p class="note">6 SKU ที่ขายได้มากที่สุด · ม.ค. – ก.ค. 2026</p>
+      <div class="chart-wrap h360"><canvas id="cSkuTrend"></canvas></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>สถานะสต็อกรายสินค้า</h2></div>
+      <p class="note">Run Score สูง = สต็อกบวมเมื่อเทียบกับความเร็วขาย · คงเหลือแยกคลังลาดบัวหลวง / มหาชัย</p>
+      <div class="controls">
+        <label for="selStockSort">เรียงตาม</label>
+        <select id="selStockSort">
+          <option value="qty">ยอดขายสะสม (มาก→น้อย)</option>
+          <option value="run">Run Score (สูง→ต่ำ)</option>
+          <option value="stock">สต็อกคงเหลือ (มาก→น้อย)</option>
+          <option value="low">สต็อกเทียบยอดขายเฉลี่ย (ต่ำ→สูง)</option>
+        </select>
+      </div>
+      <div class="table-scroll" style="max-height:560px;overflow-y:auto"><table id="tStock"></table></div>
+    </section>
+  </div>
+
+  <!-- ===== Affiliate ===== -->
+  <div class="panel" id="panel-affiliate" hidden>
+    <div class="kpis" id="kpiAff"></div>
+
+    <div class="grid2">
+      <section class="card">
+        <div class="card-head"><h2>TikTok Affiliate — GMV และค่าคอมมิชชั่นรายเดือน</h2></div>
+        <p class="note">GMV จากครีเอเตอร์ เทียบค่าคอมมิชชั่นที่จ่าย</p>
+        <div class="chart-wrap h320"><canvas id="cAffMonthly"></canvas></div>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>จำนวนครีเอเตอร์ และคอนเทนต์</h2></div>
+        <p class="note">นับเฉพาะครีเอเตอร์ที่มี GMV มากกว่าศูนย์ · จำนวนวิดีโอและไลฟ์ที่มีการขาย</p>
+        <div class="chart-wrap h320"><canvas id="cAffContent"></canvas></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="card-head"><h2>ครีเอเตอร์ TikTok ทำยอดสูงสุด</h2></div>
+      <p class="note">รวมทุกเดือนที่มีข้อมูล · commission rate = ค่าคอมฯ ÷ GMV</p>
+      <div class="table-scroll"><table id="tAffTop"></table></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card">
+        <div class="card-head"><h2>Shopee Affiliate — แยกตามช่องทาง</h2></div>
+        <p class="note">ยอดขายจากวิดีโอ / ไลฟ์ / โซเชียล</p>
+        <div class="chart-wrap h280"><canvas id="cAffShopeeCh"></canvas></div>
+      </section>
+      <section class="card">
+        <div class="card-head"><h2>พาร์ทเนอร์ Shopee ทำยอดสูงสุด</h2></div>
+        <p class="note">15 อันดับแรกตามยอดขาย</p>
+        <div class="table-scroll" style="max-height:300px;overflow-y:auto"><table id="tAffShopee"></table></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p id="footNote"></p>
+</footer>
+
+<script src="assets/chart.umd.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

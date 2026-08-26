@@ -1,0 +1,15 @@
+# ไฟล์ Excel ต้นทาง (ข้อมูลภายใน — ไม่ push ขึ้น repo)
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+
+# ระบบปฏิบัติการ / เครื่องมือ
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.vscode/
+.idea/
