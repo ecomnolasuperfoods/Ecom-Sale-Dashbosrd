@@ -18,12 +18,14 @@
 ## โครงสร้างไฟล์
 
 ```
-index.html            หน้าเว็บหลัก
-assets/styles.css     ธีม (รองรับโหมดสว่าง/มืด)
-assets/app.js         โค้ดสร้างกราฟและตารางทั้งหมด
-assets/chart.umd.js   Chart.js 4.4.7 (vendor ไว้ในโปรเจกต์ ไม่ต้องต่อ CDN)
-data/data.json        ข้อมูลที่สกัดจากไฟล์ Excel
-scripts/extract.py    สคริปต์แปลง .xlsx → data.json
+index.html                     หน้าเว็บหลัก
+assets/styles.css              ธีม (รองรับโหมดสว่าง/มืด)
+assets/app.js                  โค้ดสร้างกราฟและตารางทั้งหมด
+assets/chart.umd.js            Chart.js 4.4.7 (vendor ไว้ในโปรเจกต์ ไม่ต้องต่อ CDN)
+data/data.json                 ข้อมูลที่สกัดจากไฟล์ Excel
+scripts/extract.py             สคริปต์แปลง .xlsx → data.json
+scripts/build_standalone.py    รวมทุกอย่างเป็นไฟล์เดียวใน dist/
+dist/nola-dashboard.html       เวอร์ชันไฟล์เดียว ดับเบิลคลิกเปิดได้เลย ส่งต่อทางแชตได้
 ```
 
 ## อัปเดตข้อมูลรอบใหม่
@@ -43,7 +45,13 @@ python3 -m http.server 8000
 # เปิด http://localhost:8000
 ```
 
-4. commit และ push — GitHub Actions จะ deploy ขึ้น Pages ให้อัตโนมัติ
+4. สร้างไฟล์เวอร์ชันเดียวสำหรับส่งต่อ (ไม่ต้องมี server)
+
+```bash
+python3 scripts/build_standalone.py
+```
+
+5. commit และ push — GitHub Actions จะ deploy ขึ้น Pages ให้อัตโนมัติ
 
 ## ข้อควรรู้เกี่ยวกับข้อมูล
 
