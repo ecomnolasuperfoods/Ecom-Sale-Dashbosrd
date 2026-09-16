@@ -8,8 +8,18 @@
   // Fixed slot order — colour follows the entity, never its rank.
   var PLATFORMS = ['Tiktok', 'Shopee', 'Lazada', 'Facebook', 'Line Chat', 'Website', 'Line Shopping', 'Amaze'];
   var SLOT = { Tiktok: 1, Shopee: 2, Lazada: 3, Facebook: 4, 'Line Chat': 5, Website: 6, 'Line Shopping': 7, Amaze: 8 };
-  var SKU_MONTHS = ['Sep25', 'Oct25', 'Nov25', 'Dec25', 'Jan26', 'Feb26', 'Mar26', 'Apr26', 'May26', 'Jun26', 'Jul26'];
-  var SKU_MONTHS_TH = ['ก.ย.68', 'ต.ค.68', 'พ.ย.68', 'ธ.ค.68', 'ม.ค.69', 'ก.พ.69', 'มี.ค.69', 'เม.ย.69', 'พ.ค.69', 'มิ.ย.69', 'ก.ค.69'];
+  /* เดือนของข้อมูล SKU — เติมจาก data.json (skuMonths) ตอนโหลด ถ้าไม่มีใช้ค่าสำรองนี้ */
+  var SKU_MONTHS = ['Sep25', 'Oct25', 'Nov25', 'Dec25', 'Jan26', 'Feb26', 'Mar26', 'Apr26', 'May26', 'Jun26', 'Jul26', 'Aug26'];
+  var SKU_MONTHS_TH = [];
+  var SKU_MONTHS_26 = [];
+  function buildSkuMonths(list) {
+    if (list && list.length) SKU_MONTHS = list.slice();
+    SKU_MONTHS_TH = SKU_MONTHS.map(function (k) {
+      var m = k.slice(0, 3), y = parseInt(k.slice(3), 10);
+      return (MON_TH[m] || m) + '.' + ((2000 + y + 543) % 100);
+    });
+    SKU_MONTHS_26 = SKU_MONTHS.filter(function (k) { return k.slice(3) === '26'; });
+  }
 
   var D = null, charts = {}, activeTab = 'overview';
   var state = { dailyPlat: 'ALL', dailyMon: null, monPlatView: '2026', adsPlat: 'Tiktok', stockSort: 'qty' };
@@ -677,8 +687,15 @@
   }
 
   /* ================= PRODUCTS & STOCK ================= */
+  /* ช่วงเดือนของข้อมูล SKU ปี 2026 เช่น "ม.ค.–ส.ค. 2026" */
+  function skuRangeTH() {
+    if (!SKU_MONTHS_26.length) return '2026';
+    var a = SKU_MONTHS_26[0].slice(0, 3), b = SKU_MONTHS_26[SKU_MONTHS_26.length - 1].slice(0, 3);
+    return MON_TH[a] + '–' + MON_TH[b] + ' 2026';
+  }
+
   function prodTotal(p) {
-    return ['Jan26', 'Feb26', 'Mar26', 'Apr26', 'May26', 'Jun26', 'Jul26'].reduce(function (s, m) { return s + n(p.qty[m]); }, 0);
+    return SKU_MONTHS_26.reduce(function (s, m) { return s + n(p.qty[m]); }, 0);
   }
 
   function renderProducts() {
@@ -694,7 +711,7 @@
 
     el('kpiProducts').innerHTML = [
       kpi('SKU ทั้งหมด', baht(prods.length), 'มีการขายจริง ' + moving.length + ' ตัว'),
-      kpi('จำนวนชิ้นที่ขายได้', baht(totQty), 'สะสม ม.ค.–ก.ค. 2026'),
+      kpi('จำนวนชิ้นที่ขายได้', baht(totQty), 'สะสม ' + skuRangeTH()),
       kpi('สต็อกคงเหลือรวม', baht(totStock), 'ลาดบัวหลวง + มหาชัย · ' + withStock.length + ' SKU ที่มีของ'),
       kpi('SKU เสี่ยงของขาด', baht(risky.length), 'สต็อกคงเหลือ < ยอดขายเฉลี่ย 3 เดือน')
     ].join('');
@@ -742,7 +759,8 @@
     });
 
     var top6 = top.slice(0, 6);
-    var trendM = SKU_MONTHS.slice(4), trendTH = SKU_MONTHS_TH.slice(4);
+    var trendM = SKU_MONTHS_26, trendTH = SKU_MONTHS_TH.slice(SKU_MONTHS.length - SKU_MONTHS_26.length);
+    if (el('skuTrendNote')) el('skuTrendNote').textContent = '6 SKU ที่ขายได้มากที่สุด · ' + skuRangeTH();
     draw('cSkuTrend', {
       type: 'line',
       data: {
@@ -949,6 +967,7 @@
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function (json) {
       D = json;
+      buildSkuMonths(D.skuMonths);
       el('loading').remove();
       applyChartDefaults();
       initTheme();

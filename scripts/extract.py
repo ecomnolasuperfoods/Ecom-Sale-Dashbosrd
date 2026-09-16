@@ -50,8 +50,25 @@ for r in rows:
 out['yearly']=dict(yearly)
 
 # ---------- 2. MONTHLY 2026 + ADS ----------
-ws=wb['Pivot Sale Monthly + Ads Spend']
-g=[list(r) for r in ws.iter_rows(max_row=40,max_col=116,values_only=True)]
+# ชื่อชีตเปลี่ยนตามเวอร์ชันไฟล์ (v14 = '... + Ads Spend', v16 = '... + Ads 2026')
+ADS_SHEET=None
+for cand in ('Pivot Sale Monthly + Ads 2026','Pivot Sale Monthly + Ads Spend'):
+    if cand in wb.sheetnames: ADS_SHEET=cand; break
+if ADS_SHEET is None: sys.exit('ไม่พบชีตยอดขายรายเดือน + Ads')
+ws=wb[ADS_SHEET]
+g=[list(r) for r in ws.iter_rows(max_row=40,max_col=119,values_only=True)]
+# หาคอลัมน์เริ่มของบล็อกแต่ละแพลตฟอร์มจากหัวตาราง (แถว index 3) แทนการ hardcode
+hdr3=g[3]
+hdr4=g[4]
+def block_start(label):
+    # ค้นเฉพาะฝั่งขวาของตาราง (คอลัมน์ 14 ขึ้นไป) เพราะฝั่งซ้ายเป็น Column Labels ของ pivot
+    for ci in range(14,len(hdr3)):
+        v=hdr3[ci]
+        if v and str(v).strip()==label and str(hdr4[ci] or '').strip()=='GMV': return ci
+    return None
+BLK={'Lazada':block_start('Lazada'),'Shopee':block_start('Shopee'),'Tiktok':block_start('Tiktok')}
+if None in BLK.values(): sys.exit('หาคอลัมน์บล็อกแพลตฟอร์มไม่เจอ: '+repr(BLK))
+print('บล็อกแพลตฟอร์ม:', BLK)
 plats=['Lazada','Line Shopping','Shopee','Tiktok','Facebook','Line Chat','Amaze','Website']
 monthly=[]
 for i,m in enumerate(MON):
@@ -79,9 +96,9 @@ def block(start, fields):
         res.append({'month':m, **{f:num(r[start+k]) for k,f in enumerate(fields)}})
     return res
 out['adsDetail']={
- 'Lazada': block(15,['gmv','gmvTarget','adsMaxGmv','adsMaxSpend','roas','adsKwGmv','adsKwSpend','roasKw','adsAffGmv','adsAffSpend','roasAff','roi','diffMoMPct','diffMoM','diffTgPct','diffTg']),
- 'Shopee': block(31,['gmv','gmvTarget','adsGmv','adsSpend','roas','affGmv','affSpend','roasAff','cpasGmv','cpasSpend','roasCpas','roi','diffMoMPct','diffMoM','diffTgPct','diffTg']),
- 'Tiktok': block(47,['gmv','gmvTarget','gmvMaxAllGmv','gmvMaxAllSpend','gmvMaxAllRoas','gmvMaxGmv','gmvMaxSpend','gmvMaxRoas','gmvMaxLiveGmv','gmvMaxLiveSpend','gmvMaxLiveRoas','liveRatio','cAdsSpend']),
+ 'Lazada': block(BLK['Lazada'],['gmv','gmvTarget','adsMaxGmv','adsMaxSpend','roas','adsKwGmv','adsKwSpend','roasKw','adsAffGmv','adsAffSpend','roasAff','roi','diffMoMPct','diffMoM','diffTgPct','diffTg']),
+ 'Shopee': block(BLK['Shopee'],['gmv','gmvTarget','adsGmv','adsSpend','roas','affGmv','affSpend','roasAff','cpasGmv','cpasSpend','roasCpas','roi','diffMoMPct','diffMoM','diffTgPct','diffTg']),
+ 'Tiktok': block(BLK['Tiktok'],['gmv','gmvTarget','gmvMaxAllGmv','gmvMaxAllSpend','gmvMaxAllRoas','gmvMaxGmv','gmvMaxSpend','gmvMaxRoas','gmvMaxLiveGmv','gmvMaxLiveSpend','gmvMaxLiveRoas','liveRatio','cAdsSpend']),
 }
 
 # ---------- 3. DAILY from GMV Database ----------
@@ -117,17 +134,42 @@ out['monthlyAgg']={k:{f:round(x,2) for f,x in v.items()} for k,v in agg.items()}
 
 # ---------- 4. PRODUCTS (Mapping all stock) ----------
 ws=wb['Mapping all stock']
-rows=[list(r) for r in ws.iter_rows(min_row=5,max_row=74,max_col=44,values_only=True)]
-months=['Sep25','Oct25','Nov25','Dec25','Jan26','Feb26','Mar26','Apr26','May26','Jun26','Jul26']
+rows=[list(r) for r in ws.iter_rows(min_row=3,max_row=74,max_col=50,values_only=True)]
+hdr=rows[0]
+# หาคอลัมน์จากหัวตารางแทน hardcode (ไฟล์เพิ่มคอลัมน์เดือนใหม่ทุกรอบ ตำแหน่งจึงเลื่อน)
+MON_FULL={'SEP':'Sep','OCT':'Oct','NOV':'Nov','DEC':'Dec','JAN':'Jan','FEB':'Feb','MAR':'Mar','APR':'Apr','MAY':'May','JUN':'Jun','JUL':'Jul','AUG':'Aug'}
+monthCols=[]
+import re as _re
+for ci,v in enumerate(hdr):
+    if not v: continue
+    s=' '.join(str(v).split()).strip()
+    m=_re.match(r'^ยอดขาย\s*([A-Za-z]{3})\s*(\d{2})$', s)
+    if m and m.group(1).upper() in MON_FULL:
+        monthCols.append((ci, MON_FULL[m.group(1).upper()]+m.group(2)))
+def find(label, frm=25):
+    for ci in range(frm,len(hdr)):
+        if hdr[ci] and ' '.join(str(hdr[ci]).split()).strip().startswith(label): return ci
+    return None
+C={'avg3m':find('Sale AVG 3 Month'),'avgDday':find('Sale AVG D-DAY'),
+   'bauStatus':find('BAU สถานะ'),'ddayStatus':find('D-DAY'),
+   'runScore':find('Run Score'),'stockLBL':None,'stockMHC':find('มหาชัย'),
+   'planSend':find('จำนวน'),'status':find('Remark')}
+# 'ลาดบัวหลวง' โผล่สองที่ (BAU สถานะ กับ ยอดสต็อก) — เอาตัวที่อยู่หลัง Run Score
+rs=C['runScore']
+C['stockLBL']=find('ลาดบัวหลวง', rs if rs else 25)
+print('คอลัมน์สต็อก:', C, '| เดือน:', [m for _,m in monthCols])
 prods=[]
-for r in rows:
+for r in rows[2:]:
     if not r[0] or not r[2]: continue
-    qty={months[i]:num(r[4+i]) for i in range(11)}
+    qty={name:num(r[ci]) for ci,name in monthCols}
     prods.append({'sku':str(r[0]).strip(),'category':str(r[1] or '').strip(),'name':str(r[2]).strip(),'pack':str(r[3] or '').strip(),
-                  'qty':qty,'avg3m':num(r[26]),'avgDday':num(r[27]),
-                  'bauStatus':str(r[29] or '').strip(),'ddayStatus':str(r[30] or '').strip(),
-                  'runScore':num(r[33]),'stockLBL':num(r[35]),'stockMHC':num(r[36]),'planSend':num(r[38]),'status':str(r[40] or '').strip()})
+                  'qty':qty,'avg3m':num(r[C['avg3m']]),'avgDday':num(r[C['avgDday']]),
+                  'bauStatus':str(r[C['bauStatus']] or '').strip(),'ddayStatus':str(r[C['ddayStatus']] or '').strip(),
+                  'runScore':num(r[C['runScore']]),'stockLBL':num(r[C['stockLBL']]),'stockMHC':num(r[C['stockMHC']]),
+                  'planSend':num(r[C['planSend']]) if C['planSend'] else None,
+                  'status':str(r[C['status']] or '').strip() if C['status'] else ''})
 out['products']=prods
+out['skuMonths']=[m for _,m in monthCols]
 
 # price
 ws=wb['Price']
