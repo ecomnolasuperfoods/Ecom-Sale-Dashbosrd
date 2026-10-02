@@ -161,38 +161,65 @@
   <div class="panel" id="panel-products" hidden>
     <div class="kpis" id="kpiProducts"></div>
 
+    <p class="note" id="prodSourceNote"></p>
+
     <div class="grid2">
       <section class="card">
-        <div class="card-head"><h2>สินค้าขายดี — จำนวนชิ้น (Jan–Jul 2026)</h2></div>
-        <p class="note">15 อันดับแรกตามจำนวนชิ้นที่ขายได้สะสม</p>
-        <div class="chart-wrap h420"><canvas id="cTopSku"></canvas></div>
+        <div class="card-head"><h2>สินค้าขายดี</h2></div>
+        <div class="controls">
+          <label for="selSkuMetric">วัดด้วย</label>
+          <select id="selSkuMetric">
+            <option value="gmv">ยอดขาย (บาท)</option>
+            <option value="qty">จำนวนชิ้น</option>
+          </select>
+          <label for="selSkuRange">ช่วงเวลา</label>
+          <select id="selSkuRange">
+            <option value="2026">ปี 2026 สะสม</option>
+            <option value="3m">3 เดือนล่าสุด</option>
+            <option value="all">ทั้งหมดที่มีข้อมูล</option>
+          </select>
+        </div>
+        <p class="note" id="topSkuNote">12 อันดับแรก</p>
+        <div class="chart-wrap h460"><canvas id="cTopSku"></canvas></div>
       </section>
       <section class="card">
         <div class="card-head"><h2>สัดส่วนตามหมวดสินค้า</h2></div>
-        <p class="note">จำนวนชิ้นสะสม Jan–Jul 2026 แยกตามหมวด</p>
-        <div class="chart-wrap h420"><canvas id="cCategory"></canvas></div>
+        <p class="note" id="catNote">ยอดขายสะสมแยกตามหมวด · ใช้หน่วยและช่วงเวลาเดียวกับกราฟซ้าย</p>
+        <div class="chart-wrap h460"><canvas id="cCategory"></canvas></div>
       </section>
     </div>
 
     <section class="card">
-      <div class="card-head"><h2>แนวโน้มจำนวนชิ้นรายเดือนของสินค้าหลัก</h2></div>
+      <div class="card-head"><h2>แนวโน้มยอดขายรายเดือนของสินค้าหลัก</h2></div>
       <p class="note" id="skuTrendNote">6 SKU ที่ขายได้มากที่สุด</p>
-      <div class="chart-wrap h360"><canvas id="cSkuTrend"></canvas></div>
+      <div class="chart-wrap h380"><canvas id="cSkuTrend"></canvas></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Shopee เทียบ TikTok รายสินค้า</h2></div>
+      <p class="note" id="platSkuNote"></p>
+      <div class="chart-wrap h420"><canvas id="cSkuPlat"></canvas></div>
     </section>
 
     <section class="card">
       <div class="card-head"><h2>สถานะสต็อกรายสินค้า</h2></div>
-      <p class="note">Run Score สูง = สต็อกบวมเมื่อเทียบกับความเร็วขาย · คงเหลือแยกคลังลาดบัวหลวง / มหาชัย</p>
+      <p class="note" id="stockNote"></p>
       <div class="controls">
         <label for="selStockSort">เรียงตาม</label>
         <select id="selStockSort">
-          <option value="qty">ยอดขายสะสม (มาก→น้อย)</option>
-          <option value="run">Run Score (สูง→ต่ำ)</option>
+          <option value="low">เดือนที่ขายได้ (น้อย→มาก) — เสี่ยงขาดก่อน</option>
+          <option value="gmv">ยอดขาย 3 เดือนล่าสุด (มาก→น้อย)</option>
           <option value="stock">สต็อกคงเหลือ (มาก→น้อย)</option>
-          <option value="low">สต็อกเทียบยอดขายเฉลี่ย (ต่ำ→สูง)</option>
+          <option value="over">สต็อกบวม (เดือนที่ขายได้ มาก→น้อย)</option>
         </select>
       </div>
-      <div class="table-scroll" style="max-height:560px;overflow-y:auto"><table id="tStock"></table></div>
+      <div class="table-scroll" style="max-height:620px;overflow-y:auto"><table id="tStock"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>แผนของเข้า</h2></div>
+      <p class="note" id="planNote"></p>
+      <div class="table-scroll"><table id="tPlanIn"></table></div>
     </section>
   </div>
 
